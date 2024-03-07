@@ -1,9 +1,12 @@
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-
+import os
 
 st.header("Dicoding-Bangkit-Air Quality Analysis")
 st.write("Dikerjakan oleh Axelliano Rafael Situmeang - Bangkit ID : m200d4ky1918 - Dicoding ID : lyfora")
@@ -17,7 +20,14 @@ st.write("Disini kita akan memberikan hasil analisis yang kami olah")
 st.subheader("Hubungan antar Variabel")
 
 # Fetching Data
-merged_df = pd.read_csv("merged_asli_data.csv")
+os.chdir("..")
+os.chdir("data")
+dataframes = []
+for x in os.listdir():
+    df = pd.read_csv(x)
+    dataframes.append(df)
+merged_df = pd.concat(dataframes, ignore_index=True)
+
 merged_df.fillna(method='ffill', inplace=True)
 # Buang Yang Ga penting
 df_valuable = merged_df.iloc[:, 5:]
@@ -86,9 +96,52 @@ plt.xlabel('Year')
 plt.ylabel('CO Level')
 st.pyplot(fig)
 
+st.write('Hasil Klustering K-Means PCA')
+# st.dataframe(merged_df_1.iloc[:, 5:11])
+data = merged_df_1.iloc[:, 5:11]
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data)
+
+kmeans = KMeans(n_clusters=3, random_state=0).fit(
+    data_scaled)  # Using 3 clusters as an example
+labels = kmeans.labels_
+
+pca = PCA(n_components=2)
+reduced_data = pca.fit_transform(data_scaled)
+loadings = pca.components_.T
+feature_names = data.columns.tolist()
+loadings_df = pd.DataFrame(
+    loadings, columns=['PCA Component 1', 'PCA Component 2'], index=feature_names)
+st.dataframe(loadings_df)
+fig = plt.figure(figsize=(12, 6))
+plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=labels, cmap='viridis')
+plt.xlabel('PCA Component 1')
+plt.ylabel('PCA Component 2')
+plt.title('Pollutant Level Clustering with K-means')
+st.pyplot(fig)
+
 with st.container():
     st.markdown("""
-        ## Analisis Kualitas Udara
+        ## Analisis Kluster dan Pembahasan PCA
+
+        Secara Komposisi PCA, PCA Component 1 berfokus pada sumber Polutan dan PCA Component 2 berfokus pada Ozon.
+        
+        Dari plot :
+        Stasiun dengan skor polutan (SO2,NO2,CO) yang tinggi, kebanyakan memiliki kandungan O3 yang rendah.
+        Stasiun dengan kandungan ozon yang tinggi, biasanya memiliki kandungan NO2 yang lebih rendah.
+
+        Secara warna kluster, Ungu berarti daerah dengan Ozon (O3) yang banyak, dengan catatan NO2 yang rendah, dan polutan yang rendah secara umum
+        Hijau berarti kondisi tengah-tengah (normal) dengan polutan berimbang serta ozon yang tidak terlalu terpengaruh
+        Kuning berarti kondisi udara buruk dengan polutan yang melebihi batas dengan ozon yang memburuk.
+                
+        Secara garis besar, semakin rendahnya polutan makan kualitas Ozon semakin naik dan berlaku sebaliknya.
+        Berdasar pada data yang ada, kualitas udara yang dihimpun semakin menunjukkan arah polusi yang tidak sehat serta menurunkan kualitas ozon
+
+    """, unsafe_allow_html=True)
+
+with st.container():
+    st.markdown("""
+        ## Kesimpulan Analisis Kualitas Udara
 
         **1. Bagaimana perkembangan kualitas udara di beberapa lokasi dari tahun ke tahun?**
 
