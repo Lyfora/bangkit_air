@@ -1,7 +1,15 @@
-Sudah saya push di github.com di
-https://github.com/Lyfora/bangkit_air
+#Dicoding ReadMD AirQuality Analysis
 
-dan bisa diakses di
-https://bangkitair-q3sriwjzjyrxqpsxp49p2e.streamlit.app/
+##Setup Environtment
 
-Data Asli tidak saya sertakan dikarenakan over>25mb
+```
+pip install numpy pandas scipy matplotlib seaborn jupyter streamlit scikit-learn
+```
+
+## Run Streamlit app
+
+```
+streamlit run first_streamlit.py
+```
+
+Note: first_streamlit is in dashboard folder!
